@@ -1,0 +1,16 @@
+{% extends "layout.html" %} 
+{% block main %}
+<h1>Quoted symbol</h1>
+<table border="1" style="width: 100%">
+    <tr>
+        <th>Name</th>
+        <th>Symbol</th>
+        <th>Price</th>
+    </tr>
+    <tr>
+        <td>{{ name }}</td>
+        <td>{{ symbol }}</td>
+        <td>{{ price }}</td>
+    </tr>
+</table>
+{% endblock %}
