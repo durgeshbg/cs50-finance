@@ -53,7 +53,39 @@ def index():
 @login_required
 def buy():
     """Buy shares of stock"""
-    return apology("TODO")
+    if request.method == "POST":
+        shares = float(request.form.get("shares"))
+        symbol = request.form.get("symbol")
+        if shares < 0:
+            return apology("Invalid number of shares")
+        if not symbol:
+            return apology("Invalid symbol")
+        rows = db.execute("SELECT cash FROM users WHERE id = ?",session["user_id"])
+        cash = rows[0]["cash"]
+        symbol = symbol.upper()
+        stock = lookup(symbol)
+        if stock == None:
+            return apology("Symbol does not exist")
+
+        price = float(stock["price"])
+        total = price * shares
+        
+        # Checking if the user can buy the stock
+        if total <= cash:
+            cash = cash - total
+            db.execute("UPDATE users SET cash = ? WHERE id = ?",cash,session["user_id"])
+            try:
+                db.execute("INSERT INTO portifolio (user_id, name, symbol, shares, price, total) VALUES (?,?,?,?,?,?)",session["user_id"],stock["name"],symbol,shares,price,total)
+            except:
+                rows = db.execute("SELECT * FROM portifolio WHERE user_id = ? AND symbol = ?",session["user_id"],symbol)
+                db.execute("UPDATE portifolio SET shares = ?, price = ?, total = ? WHERE symbol = ? AND user_id = ?",rows[0]["shares"] + shares,price, rows[0]["total"] + total,symbol,session["user_id"])
+        else:
+            return apology("Sorry not enough cash")
+        db.execute("INSERT INTO history (user_id, symbol, shares, price) VALUES (?,?,?,?)",session["user_id"],symbol,shares,price)
+        return redirect("/")
+    else:
+        return render_template("buy.html")
+
 
 
 @app.route("/history")
