@@ -146,7 +146,6 @@ def register():
             return apology("Passwords dont match")
 
         hash = generate_password_hash(password)
-        rows = db.execute("SELECT * FROM users WHERE username = ?",username)
 
         try:
             user_id = db.execute("INSERT INTO users(username,hash) VALUES(?,?)",username,hash)
