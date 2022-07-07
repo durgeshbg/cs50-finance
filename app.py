@@ -195,7 +195,31 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
-    return apology("TODO")
+    if request.method == "POST":
+        shares = float(request.form.get("shares"))
+        symbol = request.form.get("symbol")
+        try:
+            rows = db.execute("SELECT * FROM portifolio WHERE user_id = ? AND symbol = ?",session["user_id"],symbol)
+        except:
+            return apology("Invalid symbol")
+        if shares < 0 or shares > rows[0]["shares"]:
+            return apology("Invalid number of shares")
+        
+        user = db.execute("SELECT cash FROM users WHERE id = ?",session["user_id"])
+        cash = user[0]["cash"]
+
+        stock = lookup(symbol)
+        price = float(stock["price"])
+        total = price * shares
+        
+        cash = cash + total
+        db.execute("UPDATE users SET cash = ? WHERE id = ?",cash,session["user_id"])
+        db.execute("UPDATE portifolio SET shares = ?, price = ?, total = ? WHERE user_id = ? AND symbol = ?",rows[0]["shares"]-shares,price,total,session["user_id"],symbol)
+        
+        db.execute("INSERT INTO history (user_id, symbol, shares, price) VALUES (?,?,?,?)",session["user_id"],symbol,-shares,price)
+        return redirect("/")
+    else:
+        return render_template("sell.html")
 
 
 def errorhandler(e):
