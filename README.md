@@ -1,2 +1,5 @@
 # CS50-Finance
-This is the last P-SET from the CS50x
+## P-SET from the CS50x
+
+
+This project contains a simple flask app which is stimulates real world trading applications.
